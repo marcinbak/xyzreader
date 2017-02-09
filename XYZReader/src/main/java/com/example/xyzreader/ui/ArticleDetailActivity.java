@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -37,10 +38,9 @@ public class ArticleDetailActivity extends AppCompatActivity
           View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
               View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
     }
+    supportPostponeEnterTransition();
     setContentView(R.layout.activity_article_detail);
-
     getLoaderManager().initLoader(0, null, this);
-
     mPagerAdapter = new MyPagerAdapter(getFragmentManager());
     mPager = (ViewPager) findViewById(R.id.pager);
     mPager.setAdapter(mPagerAdapter);
@@ -90,6 +90,12 @@ public class ArticleDetailActivity extends AppCompatActivity
   private class MyPagerAdapter extends FragmentStatePagerAdapter {
     public MyPagerAdapter(FragmentManager fm) {
       super(fm);
+    }
+
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+      super.setPrimaryItem(container, position, object);
+      supportStartPostponedEnterTransition();
     }
 
     @Override

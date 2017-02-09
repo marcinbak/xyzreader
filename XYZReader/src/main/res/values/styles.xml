@@ -33,6 +33,7 @@
   </style>
 
   <style name="Theme.Bacon.Details">
+    <item name="android:windowEnterTransition">@android:transition/slide_right</item>
   </style>
 
   <style name="CollapsedTitle" parent="TextAppearance.AppCompat.Title">

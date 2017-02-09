@@ -1,6 +1,5 @@
 package com.example.xyzreader.ui;
 
-import android.app.ActivityOptions;
 import android.app.LoaderManager;
 import android.content.*;
 import android.database.Cursor;
@@ -20,6 +19,7 @@ import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
 import com.example.xyzreader.ui.views.AspectRatioImageView;
+import com.example.xyzreader.utils.TransitionUtils;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -126,12 +126,15 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-      View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
+      final View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
       final ViewHolder vh = new ViewHolder(view);
       view.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-          Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(ArticleListActivity.this).toBundle();
+          Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(ArticleListActivity.this,
+              vh.thumbnailView, vh.thumbnailView.getTransitionName()).toBundle();
+
+
           startActivity(new Intent(Intent.ACTION_VIEW,
               ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))), bundle);
         }
@@ -155,6 +158,7 @@ public class ArticleListActivity extends AppCompatActivity implements
           ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
       holder.thumbnailView.setAspectRatio(1.0f / mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
       holder.thumbnailView.invalidate();
+      TransitionUtils.setSharedPhotoElementName(holder.thumbnailView, mCursor.getLong(ArticleLoader.Query._ID));
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.utils.TransitionUtils;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -111,6 +112,7 @@ public class ArticleDetailFragment extends Fragment implements
     });
 
     mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
+    TransitionUtils.setSharedPhotoElementName(mPhotoView, mItemId);
     mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
