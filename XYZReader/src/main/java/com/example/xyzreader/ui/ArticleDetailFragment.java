@@ -7,8 +7,9 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
@@ -16,9 +17,7 @@ import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.android.volley.VolleyError;
@@ -35,19 +34,17 @@ public class ArticleDetailFragment extends Fragment implements
     LoaderManager.LoaderCallbacks<Cursor> {
   private static final String TAG = "ArticleDetailFragment";
 
-  public static final  String ARG_ITEM_ID     = "item_id";
+  public static final String ARG_ITEM_ID = "item_id";
 
   private Cursor mCursor;
   private long   mItemId;
   private View   mRootView;
   private int mMutedColor = 0xFF333333;
-  private ColorDrawable mStatusBarColorDrawable;
 
   private int       mTopInset;
   private View      mPhotoContainerView;
   private ImageView mPhotoView;
   private Toolbar   mToolbar;
-  private int       mScrollY;
   private boolean mIsCard = false;
   private int mStatusBarFullOpacityBottom;
 
@@ -101,6 +98,9 @@ public class ArticleDetailFragment extends Fragment implements
     mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
     mRootView.findViewById(R.id.draw_insets_frame_layout);
 
+    CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) mRootView.findViewById(R.id.collapsing_toolbar);
+    collapsingToolbarLayout.setExpandedTitleColor(Color.TRANSPARENT);
+
     mToolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
     mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
     mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -111,7 +111,6 @@ public class ArticleDetailFragment extends Fragment implements
     });
 
     mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
-    mStatusBarColorDrawable = new ColorDrawable(0);
     mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -128,30 +127,10 @@ public class ArticleDetailFragment extends Fragment implements
   }
 
   private void updateStatusBar() {
-    int color = 0;
-    if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-      float f = progress(mScrollY,
-          mStatusBarFullOpacityBottom - mTopInset * 3,
-          mStatusBarFullOpacityBottom - mTopInset);
-      color = Color.argb((int) (255 * f),
-          (int) (Color.red(mMutedColor) * 0.9),
-          (int) (Color.green(mMutedColor) * 0.9),
-          (int) (Color.blue(mMutedColor) * 0.9));
-    }
-    mStatusBarColorDrawable.setColor(color);
-  }
-
-  static float progress(float v, float min, float max) {
-    return constrain((v - min) / (max - min), 0, 1);
-  }
-
-  static float constrain(float val, float min, float max) {
-    if (val < min) {
-      return min;
-    } else if (val > max) {
-      return max;
-    } else {
-      return val;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
+      Window window = getActivity().getWindow();
+      window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+      window.setStatusBarColor(mMutedColor);
     }
   }
 
@@ -169,6 +148,7 @@ public class ArticleDetailFragment extends Fragment implements
       mRootView.setAlpha(0);
       mRootView.setVisibility(View.VISIBLE);
       mRootView.animate().alpha(1);
+      mToolbar.setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
       titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
       bylineView.setText(Html.fromHtml(
           DateUtils.getRelativeTimeSpanString(
@@ -234,16 +214,5 @@ public class ArticleDetailFragment extends Fragment implements
   public void onLoaderReset(Loader<Cursor> cursorLoader) {
     mCursor = null;
     bindViews();
-  }
-
-  public int getUpButtonFloor() {
-    if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
-      return Integer.MAX_VALUE;
-    }
-
-    // account for parallax
-    return mIsCard
-        ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
-        : mPhotoView.getHeight() - mScrollY;
   }
 }
